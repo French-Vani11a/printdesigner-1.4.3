@@ -1,95 +1,96 @@
 <template>
-	<div>
-		<div
-			class="canvas"
-			id="canvas"
-			ref="canvasContainer"
-			v-marquee="marqueeOptions"
-			:style="[MainStore.mode == 'editing' && { cursor: MainStore.cursor }]"
-		>
-			<AppPages v-for="page in ElementStore.Elements" :key="page.index" :page="page" />
-			<div class="page-btn-wrapper">
-				<button
-					class="btn"
-					@click="
-						async (event) => {
-							await addNewPage(event);
-						}
-					"
-				>
-					<IconsUse
-						:draggable="false"
-						:size="18"
-						name="es-line-add"
-						key="es-line-add"
-						color="var(--invert-neutral)"
-					/>
-					{{
-						MainStore.mode == "editing"
-							? "Add New Page"
-							: `Add New ${
-									MainStore.mode.charAt(0).toUpperCase() +
-									MainStore.mode.slice(1)
-							  }`
-					}}
-				</button>
-				<button
-					class="btn"
-					v-if="MainStore.mode != 'editing'"
-					@click="async function($event) { await saveHeaderFooter($event, true) }"
-				>
-					<IconsUse
-						:draggable="false"
-						:size="18"
-						name="es-line-close"
-						key="es-line-close"
-						color="var(--invert-neutral)"
-					/>
-					Close
-				</button>
-				<button
-					class="btn btn-primary"
-					v-if="MainStore.mode != 'editing'"
-					@click="
-						async (event) => {
-							await saveHeaderFooter(event);
-						}
-					"
-				>
-					<IconsUse
-						:draggable="false"
-						:size="18"
-						name="es-line-check"
-						key="es-line-check"
-					/>
-					{{
-						`Save ${MainStore.mode.charAt(0).toUpperCase() + MainStore.mode.slice(1)}`
-					}}
-				</button>
-			</div>
-			<AppWidthHeightModal v-if="!!MainStore.openModal" :openModal="MainStore.openModal" />
-			<AppDynamicTextModal
-				v-if="!!MainStore.openDynamicModal || !!MainStore.openTableColumnModal?.table"
-				:openDynamicModal="
-					MainStore.openDynamicModal || MainStore.openTableColumnModal.column
-				"
-				:table="
-					MainStore.openTableColumnModal ? MainStore.openTableColumnModal.table : null
-				"
-			/>
-			<AppBarcodeModal
-				v-if="!!MainStore.openBarcodeModal"
-				:openBarcodeModal="MainStore.openBarcodeModal"
-			/>
-			<AppImageModal
-				v-if="!!MainStore.openImageModal"
-				:openImageModal="MainStore.openImageModal"
-			/>
-			<AppUserProvidedJinjaModal v-if="!!MainStore.openJinjaModal" />
-		</div>
-		<AppPreviewPdf v-if="MainStore.mode == 'preview'" />
-	</div>
+  <div>
+    <div
+      class="canvas"
+      id="canvas"
+      ref="canvasContainer"
+      v-marquee="marqueeOptions"
+      :style="MainStore.mode === 'editing' ? { cursor: MainStore.cursor } : {}"
+    >
+      <AppPages
+        v-for="page in ElementStore.Elements"
+        :key="page.index"
+        :page="page"
+      />
+
+      <div class="page-btn-wrapper">
+        <!-- Add New Page Button -->
+        <button class="btn" @click="addNewPage">
+          <IconsUse
+            :draggable="false"
+            :size="18"
+            name="es-line-add"
+            color="var(--invert-neutral)"
+          />
+          {{
+            MainStore.mode === "editing"
+              ? "Add New Page"
+              : `Add New ${MainStore.mode.charAt(0).toUpperCase() + MainStore.mode.slice(1)}`
+          }}
+        </button>
+
+        <!-- Close Button -->
+        <button
+          class="btn"
+          v-if="MainStore.mode !== 'editing'"
+          @click="() => saveHeaderFooter($event, true)"
+        >
+          <IconsUse
+            :draggable="false"
+            :size="18"
+            name="es-line-close"
+            color="var(--invert-neutral)"
+          />
+          Close
+        </button>
+
+        <!-- Save Button -->
+        <button
+          class="btn btn-primary"
+          v-if="MainStore.mode !== 'editing'"
+          @click="saveHeaderFooter"
+        >
+          <IconsUse
+            :draggable="false"
+            :size="18"
+            name="es-line-check"
+          />
+          {{
+            `Save ${MainStore.mode.charAt(0).toUpperCase() + MainStore.mode.slice(1)}`
+          }}
+        </button>
+      </div>
+
+      <!-- Modals -->
+      <AppWidthHeightModal
+        v-if="!!MainStore.openModal"
+        :openModal="MainStore.openModal"
+      />
+
+      <AppDynamicTextModal
+        v-if="!!MainStore.openDynamicModal || !!MainStore.openTableColumnModal?.table"
+        :openDynamicModal="MainStore.openDynamicModal || MainStore.openTableColumnModal?.column"
+        :table="MainStore.openTableColumnModal?.table || null"
+      />
+
+      <AppBarcodeModal
+        v-if="!!MainStore.openBarcodeModal"
+        :openBarcodeModal="MainStore.openBarcodeModal"
+      />
+
+      <AppImageModal
+        v-if="!!MainStore.openImageModal"
+        :openImageModal="MainStore.openImageModal"
+      />
+
+      <AppUserProvidedJinjaModal v-if="!!MainStore.openJinjaModal" />
+    </div>
+
+    <!-- Preview PDF -->
+    <AppPreviewPdf v-if="MainStore.mode === 'preview'" />
+  </div>
 </template>
+
 <script setup>
 import AppPages from "./AppPages.vue";
 import AppWidthHeightModal from "./AppWidthHeightModal.vue";

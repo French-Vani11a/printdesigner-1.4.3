@@ -1,211 +1,185 @@
-<t<template>
-	<div :class="section.title && 'settings-section'" v-if="section.sectionCondtional()">
-		<p v-if="section.title" class="section-title">{{ section.title }}</p>
-		<div class="fields-container">
-			<template v-for="field in section.fields">
-				<div
-					:key="field.name"
-					:class="[
-						'panel-container',
-						{
-							'panel-border-top':
-								field.findIndex(
-									(fd) =>
-										(typeof fd.condtional != 'function' || fd.condtional()) &&
-										fd.parentBorderTop
-								) != -1,
-							'panel-border-bottom':
-								field.findIndex(
-									(fd) =>
-										(typeof fd.condtional != 'function' || fd.condtional()) &&
-										fd.parentBorderBottom
-								) != -1,
-						},
-					]"
-					v-if="Array.isArray(field)"
-				>
-					<template v-for="fd in field">
-						<div
-							:key="fd.name"
-							:class="[
-								'flex-container',
-								{
-									'flex-column': fd.labelDirection == 'column',
-									'flex-row': fd.labelDirection == 'row',
-									'has-frappe-control': !!fd.frappeControl,
-								},
-							]"
-							:style="[fd.flex && { flex: fd.flex }]"
-							v-if="typeof fd.condtional != 'function' || fd.condtional()"
-							@loadstart="borderCheckOnLoad(fd)"
-						>
-							<IconsUse
-								v-if="fd.icon"
-								:name="fd.icon.name"
-								:key="fd.icon.name"
-								:size="fd.icon.size || 20"
-								:padding="fd.icon.padding || 0"
-								:margin="fd.icon.margin || 0"
-								:color="(typeof fd.icon.isActive != 'function' ? fd.icon.isActive : fd.icon.isActive()) ? 'var(--primary-color)' : fd.icon.color || 'var(--gray-600)'"
-								@click="typeof fd.icon.onClick != 'function' || fd.icon.onClick($event)"
-							/>
-							<button
-								v-if="fd.button"
-								:class="[
-									`btn btn-${fd.button.size || 'md'}`,
-									fd.button.style && typeof fd.button.style == 'function'
-										? `btn-${fd.button.style()}`
-										: `btn-${fd.button.style}`,
-								]"
-								@click="(event) => { fd.button.onClick(event, fd); event.target.blur(); }"
-								:style="[
-									fd.flex && { flex: fd.flex },
-									`padding: ${fd.button.padding}px; margin-top: ${fd.button.margin}px; margin-bottom: ${fd.button.margin}px;`,
-									'font-size:11px;',
-								]"
-							>
-								{{
-									typeof fd.button.label == 'function'
-										? fd.button.label()
-										: fd.button.label
-								}}
-							</button>
-							<AppPropertiesFrappeControl
-								:key="`FC_${fd.name}`"
-								v-if="fd.frappeControl"
-								:field="fd"
-							/>
-							<label
-								v-if="
-									!fd.frappeControl &&
-									fd.isLabelled &&
-									(fd.icon == null || !(fd.icon && fd.icon.onlyIcon)) &&
-									!fd.button
-								"
-								class="main-label"
-								v-text="typeof fd.label == 'function' ? fd.label() : fd.label"
-							></label>
-							<input
-								v-if="
-									!fd.frappeControl &&
-									(fd.icon == null || !(fd.icon && fd.icon.onlyIcon)) &&
-									!fd.button
-								"
-								:value="
-									fd.isStyle
-										? styleFormattedValue(
-												fd.isStyle
-													? MainStore.getCurrentStyle(fd.propertyName)
-													: MainStore.getCurrentStyle({
-															reactiveObject: fd.reactiveObject,
-															isStyle: fd.isStyle,
-															property: fd.propertyName,
-													  }),
-												typeof fd.inputUnit == 'function'
-													? fd.inputUnit()
-													: fd.inputUnit,
-												fd.isRaw,
-												fd.isCustomUOM
-										  )
-										: fd.isRaw
-										? getConditonalObject(fd)[fd.propertyName]
-										: uomFormattedValue(
-												fd.isStyle
-													? MainStore.getCurrentStyle(fd.propertyName)
-													: getConditonalObject({
-															reactiveObject: fd.reactiveObject,
-															isStyle: fd.isStyle,
-															property: fd.propertyName,
-													  }),
-												(convertionUnit =
-													typeof fd.inputUnit == 'function'
-														? fd.inputUnit()
-														: fd.inputUnit)
-										  )
-								"
-								@blur="($event) => {
-									let object = fd.isStyle
-										? MainStore.getStyleObject(fd.isFontStyle)
-										: getConditonalObject(fd);
-									return handleBlur({
-										$event,
-										object,
-										property: fd.propertyName,
-										defaultInputUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
-										convertionUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
-										withUom: fd.saveWithUom,
-										isRaw: fd.isRaw,
-										isCustomUOM: fd.isCustomUOM,
-									});
-								}"
-								@keydown="($event) => {
-									let object = fd.isStyle
-										? MainStore.getStyleObject(fd.isFontStyle)
-										: getConditonalObject(fd);
-									return handleKeyDown({
-										$event,
-										object,
-										property: fd.propertyName,
-										defaultInputUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
-										convertionUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
-										withUom: fd.saveWithUom,
-										isRaw: fd.isRaw,
-										isCustomUOM: fd.isCustomUOM,
-									});
-								}"
-								@keyup.enter="(e) => e.target.blur()"
-								spellcheck="false"
-								@focus="(ev) => ev.target.select()"
-								autocomplete="off"
-								class="form-control panel-input"
-							/>
-						</div>
-					</template>
-				</div>
-				<div
-					v-else-if="
-						field.frappeControl &&
-						(typeof field.condtional != 'function' || field.condtional())
-					"
-					:class="['frappeControl']"
-				>
-					<label
-						v-if="field.isLabelled"
-						class="main-label"
-						v-text="typeof field.label == 'function' ? field.label() : field.label"
-					></label>
-					<div
-						:ref="(el) => {
-							field.frappeControl(el, field.name);
-						}"
-					></div>
-				</div>
-				<button
-					v-else-if="field.button"
-					:class="[
-						`btn btn-${field.button.size || 'md'}`,
-						field.button.style && `btn-${field.button.style}`,
-					]"
-					@click="(event) => {
-						field.button.onClick(event, field);
-						event.target.blur();
-					}"
-					:style="[
-						field.flex && { flex: field.flex },
-						`padding: ${field.button.padding}px; margin-top: ${field.button.margin}px; margin-bottom: ${field.button.margin}px;`,
-						'font-size:11px;',
-					]"
-				>
-					{{
-						typeof field.button.label == 'function'
-							? field.button.label()
-							: field.button.label
-					}}
-				</button>
-			</template>
-		</div>
-	</div>
+<template>
+  <div :class="section.title ? 'settings-section' : ''" v-if="section.sectionCondtional()">
+    <p v-if="section.title" class="section-title">{{ section.title }}</p>
+    <div class="fields-container">
+      <template v-for="field in section.fields" :key="field.name || field[0]?.name">
+        <div
+          v-if="Array.isArray(field)"
+          :class="[
+            'panel-container',
+            {
+              'panel-border-top': field.findIndex(fd =>
+                (typeof fd.condtional !== 'function' || fd.condtional()) && fd.parentBorderTop
+              ) !== -1,
+              'panel-border-bottom': field.findIndex(fd =>
+                (typeof fd.condtional !== 'function' || fd.condtional()) && fd.parentBorderBottom
+              ) !== -1
+            }
+          ]"
+        >
+          <template v-for="fd in field" :key="fd.name">
+            <div
+              v-if="typeof fd.condtional !== 'function' || fd.condtional()"
+              :class="[
+                'flex-container',
+                {
+                  'flex-column': fd.labelDirection === 'column',
+                  'flex-row': fd.labelDirection === 'row',
+                  'has-frappe-control': !!fd.frappeControl
+                }
+              ]"
+              :style="fd.flex ? { flex: fd.flex } : {}"
+              @loadstart="borderCheckOnLoad(fd)"
+            >
+              <IconsUse
+                v-if="fd.icon"
+                :name="fd.icon.name"
+                :key="fd.icon.name"
+                :size="fd.icon.size || 20"
+                :padding="fd.icon.padding || 0"
+                :margin="fd.icon.margin || 0"
+                :color="(typeof fd.icon.isActive !== 'function'
+                  ? fd.icon.isActive
+                  : fd.icon.isActive())
+                  ? 'var(--primary-color)'
+                  : fd.icon.color || 'var(--gray-600)'"
+                @click="fd.icon.onClick && fd.icon.onClick($event)"
+              />
+              <button
+                v-if="fd.button"
+                :class="[
+                  `btn btn-${fd.button.size || 'md'}`,
+                  fd.button.style
+                    ? `btn-${typeof fd.button.style === 'function' ? fd.button.style() : fd.button.style}`
+                    : ''
+                ]"
+                :style="[
+                  fd.flex ? { flex: fd.flex } : {},
+                  `padding: ${fd.button.padding}px; margin-top: ${fd.button.margin}px; margin-bottom: ${fd.button.margin}px;`,
+                  'font-size:11px;'
+                ]"
+                @click="(event) => { fd.button.onClick(event, fd); event.target.blur(); }"
+              >
+                {{
+                  typeof fd.button.label === 'function'
+                    ? fd.button.label()
+                    : fd.button.label
+                }}
+              </button>
+              <AppPropertiesFrappeControl
+                v-if="fd.frappeControl"
+                :key="`FC_${fd.name}`"
+                :field="fd"
+              />
+              <label
+                v-if="!fd.frappeControl && fd.isLabelled && (!fd.icon || !fd.icon.onlyIcon) && !fd.button"
+                class="main-label"
+                v-text="typeof fd.label === 'function' ? fd.label() : fd.label"
+              />
+              <input
+                v-if="!fd.frappeControl && (!fd.icon || !fd.icon.onlyIcon) && !fd.button"
+                class="form-control panel-input"
+                :value="
+                  fd.isStyle
+                    ? styleFormattedValue(
+                        MainStore.getCurrentStyle(fd.propertyName),
+                        typeof fd.inputUnit === 'function' ? fd.inputUnit() : fd.inputUnit,
+                        fd.isRaw,
+                        fd.isCustomUOM
+                      )
+                    : fd.isRaw
+                    ? getConditonalObject(fd)[fd.propertyName]
+                    : uomFormattedValue(
+                        fd.isStyle
+                          ? MainStore.getCurrentStyle(fd.propertyName)
+                          : getConditonalObject({
+                              reactiveObject: fd.reactiveObject,
+                              isStyle: fd.isStyle,
+                              property: fd.propertyName
+                            }),
+                        typeof fd.inputUnit === 'function'
+                          ? fd.inputUnit()
+                          : fd.inputUnit
+                      )
+                "
+                @blur="($event) => {
+                  const object = fd.isStyle
+                    ? MainStore.getStyleObject(fd.isFontStyle)
+                    : getConditonalObject(fd);
+                  return handleBlur({
+                    $event,
+                    object,
+                    property: fd.propertyName,
+                    defaultInputUnit: typeof fd.inputUnit === 'function' ? fd.inputUnit() : fd.inputUnit,
+                    convertionUnit: typeof fd.inputUnit === 'function' ? fd.inputUnit() : fd.inputUnit,
+                    withUom: fd.saveWithUom,
+                    isRaw: fd.isRaw,
+                    isCustomUOM: fd.isCustomUOM
+                  });
+                }"
+                @keydown="($event) => {
+                  const object = fd.isStyle
+                    ? MainStore.getStyleObject(fd.isFontStyle)
+                    : getConditonalObject(fd);
+                  return handleKeyDown({
+                    $event,
+                    object,
+                    property: fd.propertyName,
+                    defaultInputUnit: typeof fd.inputUnit === 'function' ? fd.inputUnit() : fd.inputUnit,
+                    convertionUnit: typeof fd.inputUnit === 'function' ? fd.inputUnit() : fd.inputUnit,
+                    withUom: fd.saveWithUom,
+                    isRaw: fd.isRaw,
+                    isCustomUOM: fd.isCustomUOM
+                  });
+                }"
+                @keyup.enter="(e) => e.target.blur()"
+                @focus="(ev) => ev.target.select()"
+                spellcheck="false"
+                autocomplete="off"
+              />
+            </div>
+          </template>
+        </div>
+
+        <div
+          v-else-if="field.frappeControl && (typeof field.condtional !== 'function' || field.condtional())"
+          class="frappeControl"
+        >
+          <label
+            v-if="field.isLabelled"
+            class="main-label"
+            v-text="typeof field.label === 'function' ? field.label() : field.label"
+          />
+          <div :ref="(el) => field.frappeControl(el, field.name)" />
+        </div>
+
+        <button
+          v-else-if="field.button"
+          :class="[
+            `btn btn-${field.button.size || 'md'}`,
+            field.button.style ? `btn-${field.button.style}` : ''
+          ]"
+          :style="[
+            field.flex ? { flex: field.flex } : {},
+            `padding: ${field.button.padding}px; margin-top: ${field.button.margin}px; margin-bottom: ${field.button.margin}px;`,
+            'font-size:11px;'
+          ]"
+          @click="(event) => {
+            field.button.onClick(event, field);
+            event.target.blur();
+          }"
+        >
+          {{
+            typeof field.button.label === 'function'
+              ? field.button.label()
+              : field.button.label
+          }}
+        </button>
+      </template>
+    </div>
+  </div>
 </template>
+
 
 
 <script setup>
