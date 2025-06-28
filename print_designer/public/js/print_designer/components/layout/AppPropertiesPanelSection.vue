@@ -1,8 +1,8 @@
-<template>
+<t<template>
 	<div :class="section.title && 'settings-section'" v-if="section.sectionCondtional()">
 		<p v-if="section.title" class="section-title">{{ section.title }}</p>
 		<div class="fields-container">
-			<template v-for="field in section.fields" >
+			<template v-for="field in section.fields">
 				<div
 					:key="field.name"
 					:class="[
@@ -24,7 +24,7 @@
 					]"
 					v-if="Array.isArray(field)"
 				>
-					<template v-for="fd in field" >
+					<template v-for="fd in field">
 						<div
 							:key="fd.name"
 							:class="[
@@ -46,18 +46,8 @@
 								:size="fd.icon.size || 20"
 								:padding="fd.icon.padding || 0"
 								:margin="fd.icon.margin || 0"
-								:color="
-									(
-										typeof fd.icon.isActive != 'function'
-											? fd.icon.isActive
-											: fd.icon.isActive()
-									)
-										? 'var(--primary-color)'
-										: fd.icon.color || 'var(--gray-600)'
-								"
-								@click="
-									typeof fd.icon.onClick != 'function' || fd.icon.onClick($event)
-								"
+								:color="(typeof fd.icon.isActive != 'function' ? fd.icon.isActive : fd.icon.isActive()) ? 'var(--primary-color)' : fd.icon.color || 'var(--gray-600)'"
+								@click="typeof fd.icon.onClick != 'function' || fd.icon.onClick($event)"
 							/>
 							<button
 								v-if="fd.button"
@@ -67,12 +57,7 @@
 										? `btn-${fd.button.style()}`
 										: `btn-${fd.button.style}`,
 								]"
-								@click="
-									(event) => {
-										fd.button.onClick(event, fd);
-										event.target.blur();
-									}
-								"
+								@click="(event) => { fd.button.onClick(event, fd); event.target.blur(); }"
 								:style="[
 									fd.flex && { flex: fd.flex },
 									`padding: ${fd.button.padding}px; margin-top: ${fd.button.margin}px; margin-bottom: ${fd.button.margin}px;`,
@@ -80,7 +65,7 @@
 								]"
 							>
 								{{
-									typeof fd.button.label == "function"
+									typeof fd.button.label == 'function'
 										? fd.button.label()
 										: fd.button.label
 								}}
@@ -94,7 +79,7 @@
 								v-if="
 									!fd.frappeControl &&
 									fd.isLabelled &&
-									(fd.icon == null || !fd.icon?.onlyIcon) &&
+									(fd.icon == null || !(fd.icon && fd.icon.onlyIcon)) &&
 									!fd.button
 								"
 								class="main-label"
@@ -103,7 +88,7 @@
 							<input
 								v-if="
 									!fd.frappeControl &&
-									(fd.icon == null || !fd.icon.onlyIcon) &&
+									(fd.icon == null || !(fd.icon && fd.icon.onlyIcon)) &&
 									!fd.button
 								"
 								:value="
@@ -138,57 +123,37 @@
 														: fd.inputUnit)
 										  )
 								"
-								@blur="
-									($event) => {
-										let object = fd.isStyle
-											? MainStore.getStyleObject(fd.isFontStyle)
-											: getConditonalObject(fd);
-										return handleBlur({
-											$event,
-											object,
-											property: fd.propertyName,
-											defaultInputUnit:
-												typeof fd.inputUnit == 'function'
-													? fd.inputUnit()
-													: fd.inputUnit,
-											convertionUnit:
-												typeof fd.inputUnit == 'function'
-													? fd.inputUnit()
-													: fd.inputUnit,
-											withUom: fd.saveWithUom,
-											isRaw: fd.isRaw,
-											isCustomUOM: fd.isCustomUOM,
-										});
-									}
-								"
-								@keydown="
-									($event) => {
-										let object = fd.isStyle
-											? MainStore.getStyleObject(fd.isFontStyle)
-											: getConditonalObject(fd);
-										return handleKeyDown({
-											$event,
-											object,
-											property: fd.propertyName,
-											defaultInputUnit:
-												typeof fd.inputUnit == 'function'
-													? fd.inputUnit()
-													: fd.inputUnit,
-											convertionUnit:
-												typeof fd.inputUnit == 'function'
-													? fd.inputUnit()
-													: fd.inputUnit,
-											withUom: fd.saveWithUom,
-											isRaw: fd.isRaw,
-											isCustomUOM: fd.isCustomUOM,
-										});
-									}
-								"
-								@keyup.enter="
-									(e) => {
-										e.target.blur();
-									}
-								"
+								@blur="($event) => {
+									let object = fd.isStyle
+										? MainStore.getStyleObject(fd.isFontStyle)
+										: getConditonalObject(fd);
+									return handleBlur({
+										$event,
+										object,
+										property: fd.propertyName,
+										defaultInputUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
+										convertionUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
+										withUom: fd.saveWithUom,
+										isRaw: fd.isRaw,
+										isCustomUOM: fd.isCustomUOM,
+									});
+								}"
+								@keydown="($event) => {
+									let object = fd.isStyle
+										? MainStore.getStyleObject(fd.isFontStyle)
+										: getConditonalObject(fd);
+									return handleKeyDown({
+										$event,
+										object,
+										property: fd.propertyName,
+										defaultInputUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
+										convertionUnit: typeof fd.inputUnit == 'function' ? fd.inputUnit() : fd.inputUnit,
+										withUom: fd.saveWithUom,
+										isRaw: fd.isRaw,
+										isCustomUOM: fd.isCustomUOM,
+									});
+								}"
+								@keyup.enter="(e) => e.target.blur()"
 								spellcheck="false"
 								@focus="(ev) => ev.target.select()"
 								autocomplete="off"
@@ -210,11 +175,9 @@
 						v-text="typeof field.label == 'function' ? field.label() : field.label"
 					></label>
 					<div
-						:ref="
-							(el) => {
-								field.frappeControl(el, field.name);
-							}
-						"
+						:ref="(el) => {
+							field.frappeControl(el, field.name);
+						}"
 					></div>
 				</div>
 				<button
@@ -223,12 +186,10 @@
 						`btn btn-${field.button.size || 'md'}`,
 						field.button.style && `btn-${field.button.style}`,
 					]"
-					@click="
-						(event) => {
-							field.button.onClick(event, field);
-							event.target.blur();
-						}
-					"
+					@click="(event) => {
+						field.button.onClick(event, field);
+						event.target.blur();
+					}"
 					:style="[
 						field.flex && { flex: field.flex },
 						`padding: ${field.button.padding}px; margin-top: ${field.button.margin}px; margin-bottom: ${field.button.margin}px;`,
@@ -236,7 +197,7 @@
 					]"
 				>
 					{{
-						typeof field.button.label == "function"
+						typeof field.button.label == 'function'
 							? field.button.label()
 							: field.button.label
 					}}
@@ -245,6 +206,7 @@
 		</div>
 	</div>
 </template>
+
 
 <script setup>
 import { useChangeValueUnit } from "../../composables/ChangeValueUnit";

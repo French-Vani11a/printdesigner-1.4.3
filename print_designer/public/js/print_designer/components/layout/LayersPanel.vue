@@ -14,7 +14,7 @@
 					<span style="padding: 0px 10px 0px 5px" class="fa fa-font"></span>
 					<span class="textlayer-text">{{
 						layer.DOMRef.innerText ||
-						(layer.isDynamic ? "Choose Field" : "Type Something...")
+						(layer.isDynamic && layer.image "Choose Field" : "Type Something...")
 					}}</span>
 				</div>
 				<div
@@ -29,8 +29,8 @@
 					<span style="padding: 0px 10px 0px 5px" class="fa fa-image"></span>
 					<span class="textlayer-text">{{
 						(layer.isDynamic
-							? layer.image?.doctype + ": " + layer.image?.label
-							: layer.image?.file_name) || "Select Image"
+							? layer.image && layer.image.doctype + ": " + layer.image && layer.image.label
+							: layer.image && layer.image.file_name) || "Select Image"
 					}}</span>
 				</div>
 				<div
@@ -44,7 +44,7 @@
 				>
 					<span style="padding: 0px 10px 0px 5px" class="fa fa-table"></span>
 					<span class="textlayer-text">{{
-						layer.table?.label || layer.table?.fieldname || "Select Table"
+						layer.table && layer.table.label || layer.table && layer.table.fieldname || "Select Table"
 					}}</span>
 				</div>
 				<div

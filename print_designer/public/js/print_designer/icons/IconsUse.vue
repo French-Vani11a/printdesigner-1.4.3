@@ -4,7 +4,7 @@
 		:width="size"
 		:height="size"
 		:style="`padding: ${padding}px; margin-top: ${margin}px; margin-bottom: ${margin}px;`"
-		:class="class"
+		:class="customClass"
 	>
 		<use :href="`#${name}`" :style="`fill: ${color}; --icon-stroke:${color};`" />
 	</svg>

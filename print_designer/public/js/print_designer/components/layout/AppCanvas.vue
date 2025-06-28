@@ -36,11 +36,7 @@
 				<button
 					class="btn"
 					v-if="MainStore.mode != 'editing'"
-					@click="
-						async (event) => {
-							await saveHeaderFooter(event, true);
-						}
-					"
+					@click="async function($event) { await saveHeaderFooter($event, true) }"
 				>
 					<IconsUse
 						:draggable="false"
