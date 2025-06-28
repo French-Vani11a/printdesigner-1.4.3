@@ -14,7 +14,6 @@
       />
 
       <div class="page-btn-wrapper">
-        <!-- Add New Page Button -->
         <button class="btn" @click="addNewPage">
           <IconsUse
             :draggable="false"
@@ -22,18 +21,13 @@
             name="es-line-add"
             color="var(--invert-neutral)"
           />
-          {{
-            MainStore.mode === "editing"
-              ? "Add New Page"
-              : `Add New ${MainStore.mode.charAt(0).toUpperCase() + MainStore.mode.slice(1)}`
-          }}
+          {{ addNewLabel }}
         </button>
 
-        <!-- Close Button -->
         <button
           class="btn"
           v-if="MainStore.mode !== 'editing'"
-          @click="() => saveHeaderFooter($event, true)"
+          @click="onCloseClick"
         >
           <IconsUse
             :draggable="false"
@@ -44,7 +38,6 @@
           Close
         </button>
 
-        <!-- Save Button -->
         <button
           class="btn btn-primary"
           v-if="MainStore.mode !== 'editing'"
@@ -55,64 +48,57 @@
             :size="18"
             name="es-line-check"
           />
-          {{
-            `Save ${MainStore.mode.charAt(0).toUpperCase() + MainStore.mode.slice(1)}`
-          }}
+          {{ saveLabel }}
         </button>
       </div>
 
-      <!-- Modals -->
-      <AppWidthHeightModal
-        v-if="!!MainStore.openModal"
-        :openModal="MainStore.openModal"
-      />
-
+      <AppWidthHeightModal v-if="!!MainStore.openModal" :openModal="MainStore.openModal" />
       <AppDynamicTextModal
         v-if="!!MainStore.openDynamicModal || !!MainStore.openTableColumnModal?.table"
         :openDynamicModal="MainStore.openDynamicModal || MainStore.openTableColumnModal?.column"
-        :table="MainStore.openTableColumnModal && MainStore.openTableColumnModal.table || null"
+        :table="MainStore.openTableColumnModal?.table || null"
       />
-
-      <AppBarcodeModal
-        v-if="!!MainStore.openBarcodeModal"
-        :openBarcodeModal="MainStore.openBarcodeModal"
-      />
-
-      <AppImageModal
-        v-if="!!MainStore.openImageModal"
-        :openImageModal="MainStore.openImageModal"
-      />
-
+      <AppBarcodeModal v-if="!!MainStore.openBarcodeModal" :openBarcodeModal="MainStore.openBarcodeModal" />
+      <AppImageModal v-if="!!MainStore.openImageModal" :openImageModal="MainStore.openImageModal" />
       <AppUserProvidedJinjaModal v-if="!!MainStore.openJinjaModal" />
     </div>
 
-    <!-- Preview PDF -->
     <AppPreviewPdf v-if="MainStore.mode === 'preview'" />
   </div>
 </template>
 
 <script setup>
-import AppPages from "./AppPages.vue";
-import AppWidthHeightModal from "./AppWidthHeightModal.vue";
-import AppDynamicTextModal from "./AppDynamicTextModal.vue";
-import AppUserProvidedJinjaModal from "./AppUserProvidedJinjaModal.vue";
-import AppBarcodeModal from "./AppBarcodeModal.vue";
-import AppImageModal from "./AppImageModal.vue";
-import IconsUse from "../../icons/IconsUse.vue";
-import { watch, watchEffect, onMounted, ref, nextTick } from "vue";
-import { useMainStore } from "../../store/MainStore";
-import { useElementStore } from "../../store/ElementStore";
-import { updateDynamicData, createHeaderFooterElement } from "../../utils";
-import { useMarqueeSelection } from "../../composables/MarqueeSelectionTool";
-import { useChangeValueUnit } from "../../composables/ChangeValueUnit";
+import { computed, watch, watchEffect, onMounted, ref, nextTick } from 'vue';
+import AppPages from './AppPages.vue';
+import AppWidthHeightModal from './AppWidthHeightModal.vue';
+import AppDynamicTextModal from './AppDynamicTextModal.vue';
+import AppUserProvidedJinjaModal from './AppUserProvidedJinjaModal.vue';
+import AppBarcodeModal from './AppBarcodeModal.vue';
+import AppImageModal from './AppImageModal.vue';
+import AppPreviewPdf from './AppPreviewPdf.vue';
+import IconsUse from '../base/IconsUse.vue';
+import { useMainStore } from '../../store/MainStore';
+import { useElementStore } from '../../store/ElementStore';
+import { updateDynamicData, createHeaderFooterElement } from '../../utils';
+import { useMarqueeSelection } from '../../composables/MarqueeSelectionTool';
+import { useChangeValueUnit } from '../../composables/ChangeValueUnit';
+
 const MainStore = useMainStore();
 const ElementStore = useElementStore();
 const { vMarquee } = useMarqueeSelection();
-const marqueeOptions = {
-	beforeDraw: "isMarqueeActive",
-};
-
+const marqueeOptions = { beforeDraw: 'isMarqueeActive' };
 const canvasContainer = ref(null);
+
+const addNewLabel = computed(() =>
+  MainStore.mode === 'editing'
+    ? 'Add New Page'
+    : `Add New ${MainStore.mode.charAt(0).toUpperCase() + MainStore.mode.slice(1)}`
+);
+const saveLabel = computed(() =>
+  `Save ${MainStore.mode.charAt(0).toUpperCase() + MainStore.mode.slice(1)}`
+);
+const onCloseClick = (event) => saveHeaderFooter(event, true);
+
 
 const addNewPage = async (event) => {
 	if (MainStore.mode == "editing") {

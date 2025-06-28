@@ -5,7 +5,7 @@
         <!-- Text Layer -->
         <div
           class="layer"
-          :class="{ 'layer-active': MainStore.getCurrentElementsId && MainStore.getCurrentElementsId.includes(layer.id) }"
+          :class="{ 'layer-active': isActive(layer.id) }"
           v-if="layer.type === 'text'"
         >
           <span style="padding: 0px 10px 0px 5px" class="fa fa-font"></span>
@@ -20,14 +20,14 @@
         <!-- Image Layer -->
         <div
           class="layer"
-          :class="{ 'layer-active': MainStore.getCurrentElementsId && MainStore.getCurrentElementsId.includes(layer.id) }"
+          :class="{ 'layer-active': isActive(layer.id) }"
           v-else-if="layer.type === 'image'"
         >
           <span style="padding: 0px 10px 0px 5px" class="fa fa-image"></span>
           <span class="textlayer-text">
             {{
               layer.isDynamic
-                ? (layer.image ? `${layer.image.doctype}: ${layer.image.label}` : "Select Image")
+                ? (layer.image ? (layer.image.doctype + ": " + layer.image.label) : "Select Image")
                 : (layer.image?.file_name || "Select Image")
             }}
           </span>
@@ -36,21 +36,19 @@
         <!-- Table Layer -->
         <div
           class="layer"
-          :class="{ 'layer-active': MainStore.getCurrentElementsId && MainStore.getCurrentElementsId.includes(layer.id) }"
+          :class="{ 'layer-active': isActive(layer.id) }"
           v-else-if="layer.type === 'table'"
         >
           <span style="padding: 0px 10px 0px 5px" class="fa fa-table"></span>
           <span class="textlayer-text">
-            {{
-              layer.table?.label || layer.table?.fieldname || "Select Table"
-            }}
+            {{ layer.table?.label || layer.table?.fieldname || "Select Table" }}
           </span>
         </div>
 
         <!-- Page Layer -->
         <div
           class="layer"
-          :class="{ 'layer-active': MainStore.getCurrentElementsId && MainStore.getCurrentElementsId.includes(layer.id) }"
+          :class="{ 'layer-active': isActive(layer.id) }"
           v-else-if="layer.type === 'page'"
         >
           <span class="fa fa-file-o" style="padding: 0px 10px 0px 5px"></span>
@@ -65,12 +63,11 @@
         <!-- Default / Rectangle Layer -->
         <div
           class="layer"
-          :class="{ 'layer-active': MainStore.getCurrentElementsId && MainStore.getCurrentElementsId.includes(layer.id) }"
+          :class="{ 'layer-active': isActive(layer.id) }"
           v-else
         >
           <span class="fa fa-square-o" style="padding: 0px 10px 0px 5px"></span>
-          Rect {{ Math.abs(Math.round(layer.height)) }} px *
-          {{ Math.abs(Math.round(layer.width)) }} px
+          Rect {{ getRounded(layer.height) }} px * {{ getRounded(layer.width) }} px
           <AppLayer
             class="children-container"
             v-if="layer.type === 'rectangle' && layer.childrens?.length"
@@ -89,6 +86,15 @@ import AppLayer from "./AppLayer.vue";
 
 const MainStore = useMainStore();
 const ElementStore = useElementStore();
+
+// Utilities
+function isActive(id) {
+  return MainStore.getCurrentElementsId && MainStore.getCurrentElementsId.includes(id);
+}
+
+function getRounded(value) {
+  return Math.abs(Math.round(value));
+}
 </script>
 
 <style lang="scss" scoped>
