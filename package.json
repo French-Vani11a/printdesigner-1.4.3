@@ -12,5 +12,8 @@
     "html2canvas": "^1.4.1",
     "pdfjs-dist": "v3.4.120",
     "pinia": "^3.0.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.5"
   }
 }

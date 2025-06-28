@@ -2,8 +2,9 @@
 	<div class="sidebar">
 		<div class="toolbar-section mt-3">
 			<div>
-				<template v-for="(control, key) in MainStore.controls" :key="control.id">
+				<template v-for="(control, key) in MainStore.controls" >
 					<span v-if="!control.isDisabled"
+						  :key="control.id"
 						  :title="control.aria_label"
 						  :class="iconClasses(control.id, control.icon)"
 						  @click="MainStore.setActiveControl(key)">

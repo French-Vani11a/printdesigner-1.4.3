@@ -70,7 +70,7 @@
       <AppDynamicTextModal
         v-if="!!MainStore.openDynamicModal || !!MainStore.openTableColumnModal?.table"
         :openDynamicModal="MainStore.openDynamicModal || MainStore.openTableColumnModal?.column"
-        :table="MainStore.openTableColumnModal?.table || null"
+        :table="MainStore.openTableColumnModal && MainStore.openTableColumnModal.table || null"
       />
 
       <AppBarcodeModal
