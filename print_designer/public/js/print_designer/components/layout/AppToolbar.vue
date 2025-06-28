@@ -30,6 +30,7 @@
 				:size="44"
 				:padding="14"
 				:color="MainStore.isLayerPanelEnabled ? 'var(--primary-color)' : 'var(--gray-800)'"
+				:custom-class="MainStore.isLayerPanelEnabled ? 'active-tool-icon' : ''"
 				@click="MainStore.isLayerPanelEnabled = !MainStore.isLayerPanelEnabled"
 			/>
 		</div>

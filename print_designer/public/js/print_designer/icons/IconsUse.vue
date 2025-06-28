@@ -31,7 +31,7 @@ const props = defineProps({
 	color: {
 		default: "var(--neutral)",
 	},
-	class: {
+	customClass: {
 		type: String,
 		default: "",
 	},
