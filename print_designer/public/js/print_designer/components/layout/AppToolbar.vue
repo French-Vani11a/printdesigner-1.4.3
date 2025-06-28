@@ -4,7 +4,7 @@
 			<div>
 				<template
 					v-for="({ id, aria_label, icon, isDisabled }, key) in MainStore.controls"
-					:key="id"
+					
 				>
 					<span
 						v-if="!isDisabled"

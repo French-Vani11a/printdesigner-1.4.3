@@ -2,8 +2,9 @@
 	<div :class="section.title && 'settings-section'" v-if="section.sectionCondtional()">
 		<p v-if="section.title" class="section-title">{{ section.title }}</p>
 		<div class="fields-container">
-			<template v-for="field in section.fields" :key="field.name">
+			<template v-for="field in section.fields" >
 				<div
+					:key="field.name"
 					:class="[
 						'panel-container',
 						{
@@ -23,8 +24,9 @@
 					]"
 					v-if="Array.isArray(field)"
 				>
-					<template v-for="fd in field" :key="fd.name">
+					<template v-for="fd in field" >
 						<div
+							:key="fd.name"
 							:class="[
 								'flex-container',
 								{
